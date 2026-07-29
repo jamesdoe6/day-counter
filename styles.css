@@ -1,0 +1,486 @@
+:root {
+  --violet: #6c5ce7;
+  --violet-light: #a29bfe;
+  --violet-dark: #5647c9;
+  --bg: #f6f5ff;
+  --card: #ffffff;
+  --text: #2d2b44;
+  --muted: #8a879e;
+  --danger: #e74c6f;
+  --danger-dark: #cf3d5c;
+  --border: #ece9ff;
+  --shadow: 0 6px 20px rgba(108, 92, 231, 0.12);
+  --radius: 16px;
+  --tap: 44px; /* zone tactile minimale confortable (iOS HIG) */
+  /* Marges de sécurité iPhone (encoche / île dynamique / barre de gestes) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, #efeaff 0%, var(--bg) 220px);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%; /* pas de zoom auto du texte iOS */
+  text-size-adjust: 100%;
+}
+
+/* Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  /* respecte l'encoche / île dynamique et les coins arrondis */
+  padding-top: max(16px, var(--safe-top));
+  padding-left: max(20px, var(--safe-left));
+  padding-right: max(20px, var(--safe-right));
+  background: rgba(246, 245, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo { font-size: 28px; line-height: 1; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+/* Indicateur de synchronisation */
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+.sync-badge[data-state="synced"] { color: #1b8a5a; border-color: #bfe6cf; background: #f0fbf5; }
+.sync-badge[data-state="synced"] .sync-dot { background: #1b8a5a; }
+.sync-badge[data-state="syncing"] .sync-dot { background: var(--violet); animation: pulse 1s ease-in-out infinite; }
+.sync-badge[data-state="offline"] { color: #c26b00; border-color: #f0dcae; background: #fdf6e9; }
+.sync-badge[data-state="offline"] .sync-dot { background: #e0920a; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Sur très petits écrans, on masque le libellé et on garde la pastille */
+@media (max-width: 400px) {
+  .sync-badge .sync-text { display: none; }
+  .sync-badge { padding: 7px; }
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, var(--violet), var(--violet-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Layout */
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+  padding-left: max(16px, var(--safe-left));
+  padding-right: max(16px, var(--safe-right));
+}
+
+.tagline {
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+  margin: 8px 0 24px;
+}
+
+/* Buttons */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 20px;
+  min-height: var(--tap);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* supprime le délai de 300 ms au tap */
+}
+
+.btn:active { transform: scale(0.96); }
+.btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+.btn-primary {
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.35);
+}
+.btn-primary:hover { background: var(--violet-dark); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover { background: var(--border); color: var(--text); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* Bascule d'affichage (segmenté) */
+.view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 auto 20px;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  align-self: center;
+}
+.container { display: flex; flex-direction: column; }
+.view-toggle button {
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 8px 18px;
+  min-height: 38px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.view-toggle button.active {
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.35);
+}
+.view-toggle button:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+/* Event list */
+.event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+/* Rangée : conteneur qui masque les actions révélées par le glissement */
+.event-row {
+  position: relative;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  isolation: isolate;
+}
+.event-row.dragging { opacity: 0.5; }
+.event-row.drag-over { box-shadow: 0 0 0 2px var(--violet-light), var(--shadow); }
+
+/* Boutons d'action derrière la carte */
+.swipe-btn {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 96px;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  z-index: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.swipe-btn .swipe-ico { font-size: 18px; }
+.swipe-edit { left: 0; background: var(--violet); }        /* glissé à droite */
+.swipe-delete { right: 0; background: var(--danger); }     /* glissé à gauche */
+.swipe-edit:focus-visible, .swipe-delete:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+
+.event-card {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  padding: 16px 16px 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateX(0);
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+  touch-action: pan-y; /* défilement vertical natif, glissement horizontal géré en JS */
+  will-change: transform;
+}
+.event-card.swiping { transition: none; } /* suivi direct du doigt pendant le glissement */
+
+.drag-handle {
+  cursor: grab;
+  color: var(--violet-light);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  user-select: none;
+  touch-action: none;
+}
+.drag-handle:active { cursor: grabbing; }
+
+.event-main { flex: 1; min-width: 0; }
+
+.event-name {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  word-break: break-word;
+}
+
+.event-elapsed {
+  font-size: 15px;
+  color: var(--violet);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-elapsed.future { color: var(--danger); }
+
+.event-date-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Move + edit controls */
+.event-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: var(--tap);
+  height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 16px;
+  transition: background 0.12s ease, color 0.12s ease, opacity 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.icon-btn:hover { background: var(--border); color: var(--violet); }
+.icon-btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.move-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.move-col .icon-btn { width: 34px; height: 30px; border-radius: 8px; font-size: 12px; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-emoji { font-size: 56px; margin-bottom: 8px; }
+.empty-state h2 { margin: 0 0 6px; color: var(--text); font-size: 20px; }
+.empty-state p { margin: 0 0 20px; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding qui respecte les zones sûres iPhone */
+  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right))
+           max(16px, var(--safe-bottom)) max(16px, var(--safe-left));
+  overflow-y: auto; /* si le clavier réduit la hauteur, on peut faire défiler */
+  -webkit-overflow-scrolling: touch;
+}
+/* IMPORTANT : rend l'attribut [hidden] effectif malgré display:flex ci-dessus */
+.modal[hidden] { display: none; }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 43, 68, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fade 0.15s ease;
+}
+.modal-card {
+  position: relative;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  margin: auto; /* reste centré tout en autorisant le défilement */
+  box-shadow: 0 20px 50px rgba(45, 43, 68, 0.35);
+  animation: pop 0.18s ease;
+}
+.modal-card h2 { margin: 0 44px 18px 0; font-size: 20px; }
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: var(--tap);
+  height: var(--tap);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+.modal-close:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+/* Écrans courts (clavier virtuel ouvert) : la fenêtre s'ancre en haut
+   pour que les champs et le bouton « Enregistrer » restent visibles. */
+@media (max-height: 620px) {
+  .modal { align-items: flex-start; }
+}
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+form label:first-of-type { margin-top: 0; }
+.hint { font-weight: 400; color: var(--muted); opacity: 0.8; }
+
+form input[type="text"] {
+  width: 100%;
+  font: inherit;
+  font-size: 16px; /* >= 16px : empêche le zoom automatique de Safari iOS au focus */
+  padding: 12px 14px;
+  min-height: var(--tap);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--violet-light);
+  background: #fff;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 12px 0 0;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 22px;
+}
+.modal-actions-right { display: flex; gap: 8px; margin-left: auto; }
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 20px;
+  padding-bottom: max(20px, var(--safe-bottom)); /* barre de gestes iPhone */
+}
+
+@media (max-width: 480px) {
+  .brand h1 { font-size: 19px; }
+  .event-name { font-size: 16px; }
+  /* Le glisser-déposer natif ne fonctionne pas au toucher : sur mobile on
+     masque la poignée décorative et on garde les flèches ▲/▼ (fiables au doigt). */
+  .drag-handle { display: none; }
+  .move-col { display: flex; }
+}
+
+/* Respecte la préférence système de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .btn:active { transform: none; }
+}

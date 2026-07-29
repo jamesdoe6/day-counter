@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Day-Counter — suivez le temps écoulé depuis vos événements personnalisés." />
+  <meta name="theme-color" content="#6c5ce7" />
+  <!-- Application web plein écran (ajout à l'écran d'accueil iPhone) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Day-Counter" />
+  <title>Day-Counter</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true">⏳</span>
+      <h1>Day-Counter</h1>
+    </div>
+    <div class="header-right">
+      <span id="sync-badge" class="sync-badge" data-state="local" role="status" aria-live="polite">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span class="sync-text">Local</span>
+      </span>
+      <button id="add-btn" class="btn btn-primary" type="button">
+        <span aria-hidden="true">＋</span> Ajouter
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="tagline">Combien de temps depuis&nbsp;? Ajoutez vos moments, on compte pour vous.</p>
+
+    <!-- Bascule d'affichage : détaillé vs jours uniquement -->
+    <div id="view-toggle" class="view-toggle" role="group" aria-label="Format d'affichage" hidden>
+      <button type="button" data-view="full" class="active" aria-pressed="true">Détaillé</button>
+      <button type="button" data-view="days" aria-pressed="false">Jours</button>
+    </div>
+
+    <ul id="event-list" class="event-list" aria-live="polite"></ul>
+
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-emoji" aria-hidden="true">🗓️</div>
+      <h2>Aucun événement pour l'instant</h2>
+      <p>Cliquez sur «&nbsp;Ajouter&nbsp;» pour créer votre premier compteur.</p>
+      <button class="btn btn-primary" type="button" data-action="add-empty">
+        <span aria-hidden="true">＋</span> Ajouter un événement
+      </button>
+    </div>
+  </main>
+
+  <!-- Modale d'ajout / modification -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-action="close"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button type="button" class="modal-close" data-action="close" aria-label="Fermer">✕</button>
+      <h2 id="modal-title">Nouvel événement</h2>
+      <form id="event-form" novalidate>
+        <input type="hidden" id="event-id" />
+
+        <label for="event-name">Nom de l'événement</label>
+        <input type="text" id="event-name" placeholder="Ex : FAP" maxlength="120" autocomplete="off" required />
+
+        <label for="event-date">Date <span class="hint">(JJ/MM/AAAA)</span></label>
+        <input type="text" id="event-date" placeholder="22/02/2022" inputmode="numeric" autocomplete="off" required />
+
+        <label for="event-time">Heure <span class="hint">(24h, optionnel)</span></label>
+        <input type="text" id="event-time" placeholder="14:30" inputmode="numeric" autocomplete="off" />
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="delete-btn" hidden>Supprimer</button>
+          <div class="modal-actions-right">
+            <button type="button" class="btn btn-ghost" data-action="close">Annuler</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>Vos événements sont sauvegardés en ligne et synchronisés sur tous vos appareils.</p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
