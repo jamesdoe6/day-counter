@@ -30,10 +30,16 @@
 
   /* — Couleurs assignables aux événements — */
   --tag-ink:    #3d3b36;
+  --tag-slate:  #4a5568;
   --tag-blue:   #2f4d8f;
-  --tag-brass:  #8a6d2f;
+  --tag-indigo: #4c3f8f;
+  --tag-teal:   #1f6b73;
   --tag-moss:   #40663a;
+  --tag-olive:  #6a6b25;
+  --tag-brass:  #8a6d2f;
   --tag-clay:   #9a5330;
+  --tag-rust:   #93342b;
+  --tag-rose:   #a8386b;
   --tag-plum:   #6b3560;
 
   /* — Typographie — */
@@ -70,10 +76,16 @@
     --verdigris:  #6cbfa6;
 
     --tag-ink:    #c9c6bd;
+    --tag-slate:  #93a3bd;
     --tag-blue:   #8aa6e8;
-    --tag-brass:  #cba867;
+    --tag-indigo: #a598ee;
+    --tag-teal:   #6fc0c8;
     --tag-moss:   #7fb173;
+    --tag-olive:  #bcbd63;
+    --tag-brass:  #cba867;
     --tag-clay:   #d8916a;
+    --tag-rust:   #e28a80;
+    --tag-rose:   #ef8fb4;
     --tag-plum:   #c08ab5;
   }
 }
@@ -85,8 +97,9 @@
   --rule: #e0ddd5; --rule-soft: #ebe8e1;
   --steel: #2f4d8f; --steel-tint: #eaeef8; --brass: #8a6d2f; --brass-tint: #f6efdf;
   --rust: #8c3030; --rust-tint: #f7eaea; --verdigris: #2f6b5c;
-  --tag-ink: #3d3b36; --tag-blue: #2f4d8f; --tag-brass: #8a6d2f;
-  --tag-moss: #40663a; --tag-clay: #9a5330; --tag-plum: #6b3560;
+  --tag-ink: #3d3b36; --tag-slate: #4a5568; --tag-blue: #2f4d8f; --tag-indigo: #4c3f8f;
+  --tag-teal: #1f6b73; --tag-moss: #40663a; --tag-olive: #6a6b25; --tag-brass: #8a6d2f;
+  --tag-clay: #9a5330; --tag-rust: #93342b; --tag-rose: #a8386b; --tag-plum: #6b3560;
 }
 :root[data-theme="dark"] {
   --paper: #141519; --paper-2: #1b1d22; --surface: #191b20;
@@ -94,8 +107,9 @@
   --rule: #2e3138; --rule-soft: #24272c;
   --steel: #8aa6e8; --steel-tint: #1e2634; --brass: #cba867; --brass-tint: #2a2418;
   --rust: #e08585; --rust-tint: #2e1e1e; --verdigris: #6cbfa6;
-  --tag-ink: #c9c6bd; --tag-blue: #8aa6e8; --tag-brass: #cba867;
-  --tag-moss: #7fb173; --tag-clay: #d8916a; --tag-plum: #c08ab5;
+  --tag-ink: #c9c6bd; --tag-slate: #93a3bd; --tag-blue: #8aa6e8; --tag-indigo: #a598ee;
+  --tag-teal: #6fc0c8; --tag-moss: #7fb173; --tag-olive: #bcbd63; --tag-brass: #cba867;
+  --tag-clay: #d8916a; --tag-rust: #e28a80; --tag-rose: #ef8fb4; --tag-plum: #c08ab5;
 }
 
 * { box-sizing: border-box; }
@@ -357,15 +371,24 @@ input:focus-visible, .swatch:focus-visible, .emoji:focus-visible {
 /* Filet de couleur + icône, colonne de gauche */
 .mark {
   width: 34px;
+  align-self: stretch;      /* le filet court sur toute la hauteur de la ligne */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding-top: 2px;
+  gap: 8px;
+  padding: 2px 0 4px;
   color: var(--tag, var(--ink-faint));
 }
 .mark-emoji { font-size: 20px; line-height: 1; }
-.mark-rule { width: 2px; flex: 1; min-height: 18px; background: currentColor; opacity: .5; border-radius: 2px; }
+/* Le filet porte la couleur — et le dégradé quand une seconde teinte existe. */
+.mark-rule {
+  width: 3px;
+  flex: 1;
+  min-height: 22px;
+  border-radius: 3px;
+  opacity: .8;
+  background-image: linear-gradient(180deg, var(--tag), var(--tag2, var(--tag)));
+}
 
 .entry-body { min-width: 0; }
 
@@ -437,8 +460,8 @@ input:focus-visible, .swatch:focus-visible, .emoji:focus-visible {
 .progress span {
   display: block;
   height: 100%;
-  background: var(--tag, var(--steel));
   border-radius: 2px;
+  background-image: linear-gradient(90deg, var(--tag, var(--steel)), var(--tag2, var(--tag, var(--steel))));
   transition: width .6s ease;
 }
 
@@ -633,7 +656,48 @@ form input.mono { font-family: var(--mono); }
 .field-row label { margin-top: 18px; }
 
 /* Sélecteur d'icône */
-.picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.picker-wrap {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.picker-search {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 12px;
+  min-height: 42px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule-soft);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.picker-search:focus { outline: none; background: var(--surface); }
+.picker-search::placeholder { color: var(--ink-faint); }
+
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px;
+  max-height: 208px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.picker-group {
+  flex: 0 0 100%;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 6px 0 1px;
+}
+.picker-group:first-child { margin-top: 0; }
+.picker-empty { margin: 0; padding: 16px; text-align: center; font-size: 13px; color: var(--ink-faint); }
 .emoji {
   width: 40px; height: 40px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -648,7 +712,15 @@ form input.mono { font-family: var(--mono); }
 }
 .emoji:hover { background: var(--paper-2); }
 .emoji[aria-pressed="true"] { border-color: var(--steel); background: var(--steel-tint); }
-.emoji-none { font-size: 12px; color: var(--ink-faint); letter-spacing: .04em; }
+.emoji-none {
+  width: auto;
+  padding: 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  letter-spacing: .03em;
+}
+.emoji-none[aria-pressed="true"] { color: var(--steel); }
 
 /* Nuancier */
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -670,6 +742,18 @@ form input.mono { font-family: var(--mono); }
   background: var(--sw);
 }
 .swatch[aria-pressed="true"] { border-color: var(--sw); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sw) 28%, transparent); }
+
+/* Dégradé */
+.check-inline { margin-top: 12px !important; padding: 11px 13px; }
+.check-inline em { font-size: 12px; }
+#gradient-zone label { margin-top: 16px; }
+.gradient-preview {
+  height: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  border: 1px solid var(--rule);
+  background-image: linear-gradient(90deg, var(--g1, var(--tag-ink)), var(--g2, var(--tag-ink)));
+}
 
 /* Case à cocher « chaque année » */
 .check {

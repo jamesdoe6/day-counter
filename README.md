@@ -19,8 +19,14 @@ par exemple «&nbsp;il y a 4 ans, 5 mois et 6 jours&nbsp;».
   et 6 jours ») ou **Jours** (« il y a 1 618 jours »). Le choix est mémorisé.
 - **Jalons** : chaque événement annonce son prochain cap remarquable
   (« 2 000 jours dans 89 jours ») et le met en avant en laiton le jour venu.
-- **Icône et couleur** : un emoji et une couleur au choix par événement, pour
-  repérer une ligne d'un coup d'œil.
+- **Icône et couleur** : plus de **100 icônes** classées par thème (santé et
+  habitudes, corps et sport, loisirs et écrans, famille, travail, voyage,
+  nourriture, repères) avec **recherche par mot-clé** — tapez « tabac »,
+  « cheveux », « jeux »… — et **12 teintes**.
+- **Dégradés (optionnel)** : cochez « Dégradé » pour fondre la couleur vers une
+  seconde teinte (rose → sarcelle, indigo → rose…). Le filet de la ligne et la
+  barre de progression prennent le dégradé ; sans la case cochée, la couleur
+  reste un aplat.
 - **Événements annuels** : cochez « chaque année » pour un anniversaire ou une
   date fixe — l'app affiche alors le **compte à rebours jusqu'à la prochaine
   occurrence**, le rang (« 33 ans le 14/03/2027 ») et une barre de progression
@@ -122,6 +128,10 @@ première version. Si votre base date d'avant, **relancez simplement
 En attendant, rien ne casse : l'app détecte l'ancien schéma et continue de
 synchroniser les champs de base — seules l'icône, la couleur et la récurrence
 restent alors locales.
+
+Les dégradés n'ont **pas** demandé de colonne supplémentaire : ils sont encodés
+dans la colonne `color` existante sous la forme `teinte>teinte2` (par exemple
+`rose>teal`), un aplat restant simplement `rose`.
 
 ### Limite des rappels
 

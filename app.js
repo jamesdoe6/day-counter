@@ -10,15 +10,87 @@
   var NOTIFY_KEY = "day-counter.notify";     // '1' | absent
   var NOTIFIED_KEY = "day-counter.notified"; // AAAA-MM-JJ du dernier rappel
 
-  var EMOJIS = ["🎂","❤️","🏠","💼","✈️","🎓","🚗","💍","👶","🐾","🏋️","🎉","📚","🌱","⭐"];
-  var COLORS = [
-    { key: "ink",   label: "Encre"   },
-    { key: "blue",  label: "Bleu"    },
-    { key: "brass", label: "Laiton"  },
-    { key: "moss",  label: "Mousse"  },
-    { key: "clay",  label: "Terre"   },
-    { key: "plum",  label: "Prune"   }
+  // Bibliothèque d'icônes : [emoji, mots-clés de recherche]
+  var EMOJI_GROUPS = [
+    { label: "Santé & habitudes", items: [
+      ["🚭","arret tabac cigarette sevrage stop fumer"], ["🚬","cigarette tabac fumer clope"],
+      ["💊","medicament pilule cachet traitement"], ["💉","piqure vaccin injection seringue"],
+      ["🩺","medecin docteur sante consultation"], ["🏥","hopital clinique"],
+      ["🦷","dentiste dent"], ["👓","lunettes vue optique"],
+      ["🧠","cerveau memoire psy therapie"], ["🩹","pansement blessure"],
+      ["🍺","biere alcool"], ["🍷","vin alcool"], ["🚱","sans alcool sobriete eau"],
+      ["😴","sommeil dormir nuit"], ["⚖️","poids balance regime"]
+    ]},
+    { label: "Corps & sport", items: [
+      ["💇","cheveux coiffeur coupe coiffure"], ["✂️","coupe cheveux ciseaux coiffeur"],
+      ["🧔","barbe rasage"], ["💅","ongles manucure"], ["🧴","soin creme peau"],
+      ["🏋️","muscu sport salle fitness"], ["🏃","course running jogging"],
+      ["🚴","velo cyclisme"], ["🧘","yoga meditation zen"], ["🏊","natation piscine nage"],
+      ["⚽","foot football"], ["🏀","basket"], ["🎾","tennis"], ["🥊","boxe combat"],
+      ["⛷️","ski montagne"], ["🥇","medaille victoire competition"]
+    ]},
+    { label: "Loisirs & écrans", items: [
+      ["🎮","jeux video gaming manette console"], ["🕹️","jeu retro arcade borne"],
+      ["📺","tv television serie ecran"], ["🎬","cinema film"], ["🍿","film cinema serie"],
+      ["🎵","musique chanson"], ["🎸","guitare musique"], ["🎧","casque musique podcast"],
+      ["🎤","micro chant karaoke"], ["📚","livre lecture roman"], ["🎨","peinture art dessin"],
+      ["📷","photo appareil"], ["🎲","jeu de societe des"], ["♟️","echecs strategie"],
+      ["🎯","flechette objectif cible"], ["🧩","puzzle"]
+    ]},
+    { label: "Vie & famille", items: [
+      ["🎂","anniversaire gateau naissance"], ["❤️","amour couple coeur"],
+      ["💍","mariage fiancailles bague"], ["💔","rupture separation divorce"],
+      ["👶","bebe naissance enfant"], ["👨‍👩‍👧","famille parents"],
+      ["🐾","animal chien chat patte"], ["🐶","chien"], ["🐱","chat"],
+      ["🏠","maison demenagement logement"], ["🔑","cles logement appartement"],
+      ["🎓","diplome etudes ecole remise"], ["🕊️","deuil souvenir paix"],
+      ["🤝","rencontre amitie accord"], ["🎉","fete celebration"]
+    ]},
+    { label: "Travail & argent", items: [
+      ["💼","travail boulot emploi job"], ["💻","informatique ordinateur bureau"],
+      ["🏢","entreprise bureau societe"], ["📈","progression croissance objectif"],
+      ["💰","argent economies epargne"], ["🏦","banque compte"],
+      ["💳","carte paiement credit"], ["🧾","facture impots"],
+      ["✍️","signature contrat ecrire"], ["📅","date rendez vous agenda"],
+      ["⏰","reveil horaire temps"], ["🚀","lancement projet demarrage"]
+    ]},
+    { label: "Voyage & lieux", items: [
+      ["✈️","avion voyage vol vacances"], ["🚗","voiture permis conduite auto"],
+      ["🏍️","moto scooter"], ["🚆","train"], ["🚢","bateau croisiere"],
+      ["🗺️","voyage carte exploration"], ["🏖️","plage vacances mer"],
+      ["⛰️","montagne randonnee"], ["🏕️","camping tente"], ["🌍","monde terre"],
+      ["🧳","valise depart"], ["🛂","passeport visa immigration"]
+    ]},
+    { label: "Nourriture", items: [
+      ["☕","cafe"], ["🍵","the tisane"], ["🍽️","repas restaurant diner"],
+      ["🍕","pizza"], ["🥗","salade regime healthy"], ["🍫","chocolat sucre"],
+      ["🥦","legume alimentation"], ["🚰","eau hydratation"]
+    ]},
+    { label: "Repères", items: [
+      ["⭐","favori important etoile"], ["🔥","serie streak motivation"],
+      ["⚡","energie rapide"], ["🌱","debut pousse nouveau depart"],
+      ["🏆","trophee reussite"], ["✅","fait termine valide"],
+      ["📌","epingle important"], ["🆕","nouveau"],
+      ["⏳","temps sablier attente"], ["🔁","habitude recurrent repetition"],
+      ["🎗️","cause soutien ruban"], ["🧿","chance porte bonheur"]
+    ]}
   ];
+
+  var COLORS = [
+    { key: "ink",    label: "Encre"     },
+    { key: "slate",  label: "Ardoise"   },
+    { key: "blue",   label: "Bleu"      },
+    { key: "indigo", label: "Indigo"    },
+    { key: "teal",   label: "Sarcelle"  },
+    { key: "moss",   label: "Mousse"    },
+    { key: "olive",  label: "Olive"     },
+    { key: "brass",  label: "Laiton"    },
+    { key: "clay",   label: "Terre"     },
+    { key: "rust",   label: "Rouille"   },
+    { key: "rose",   label: "Rose"      },
+    { key: "plum",   label: "Prune"     }
+  ];
+  var COLOR_KEYS = COLORS.map(function (c) { return c.key; });
 
   var OPEN_W = 104; // largeur des actions révélées au glissement
   var THRESH = 48;
@@ -50,8 +122,14 @@
   var dateInput  = document.getElementById("event-date");
   var timeInput  = document.getElementById("event-time");
   var recurInput = document.getElementById("event-recurring");
-  var emojiPick  = document.getElementById("emoji-picker");
-  var colorPick  = document.getElementById("color-picker");
+  var emojiPick   = document.getElementById("emoji-picker");
+  var emojiSearch = document.getElementById("emoji-search");
+  var emojiEmpty  = document.getElementById("emoji-empty");
+  var colorPick   = document.getElementById("color-picker");
+  var colorPick2  = document.getElementById("color-picker-2");
+  var gradToggle  = document.getElementById("gradient-toggle");
+  var gradZone    = document.getElementById("gradient-zone");
+  var gradPreview = document.getElementById("gradient-preview");
   var errorEl    = document.getElementById("form-error");
   var deleteBtn  = document.getElementById("delete-btn");
 
@@ -62,6 +140,7 @@
 
   var draftEmoji = null;
   var draftColor = "ink";
+  var draftColor2 = null; // seconde teinte du dégradé (null = aplat)
 
   // --------------------------------------------------------------------------
   // Utilitaires
@@ -310,7 +389,9 @@
 
     // Carte
     var entry = el("div", "entry");
-    entry.style.setProperty("--tag", "var(--tag-" + (ev.color || "ink") + ")");
+    var col = parseColor(ev.color);
+    entry.style.setProperty("--tag", "var(--tag-" + col.a + ")");
+    entry.style.setProperty("--tag2", "var(--tag-" + (col.b || col.a) + ")");
 
     var mark = el("div", "mark");
     if (ev.emoji) mark.appendChild(el("span", "mark-emoji", ev.emoji));
@@ -576,49 +657,107 @@
   // --------------------------------------------------------------------------
   // Sélecteurs (icône / couleur)
   // --------------------------------------------------------------------------
+  // « blue » (aplat) ou « rose>blue » (dégradé) → { a, b }
+  function parseColor(str) {
+    var parts = String(str || "ink").split(">");
+    var a = COLOR_KEYS.indexOf(parts[0]) !== -1 ? parts[0] : "ink";
+    var b = parts[1] && COLOR_KEYS.indexOf(parts[1]) !== -1 ? parts[1] : null;
+    return { a: a, b: b === a ? null : b };
+  }
+  function serializeColor(a, b) { return b && b !== a ? a + ">" + b : a; }
+
   function buildPickers() {
+    // Icônes, groupées par thème.
     var none = el("button", "emoji emoji-none", "Aucune");
     none.type = "button";
     none.dataset.emoji = "";
     emojiPick.appendChild(none);
-    EMOJIS.forEach(function (e) {
-      var b = el("button", "emoji", e);
-      b.type = "button";
-      b.dataset.emoji = e;
-      b.setAttribute("aria-label", "Icône " + e);
-      emojiPick.appendChild(b);
+
+    EMOJI_GROUPS.forEach(function (g) {
+      var head = el("div", "picker-group", g.label);
+      head.dataset.group = "1";
+      emojiPick.appendChild(head);
+      g.items.forEach(function (it) {
+        var b = el("button", "emoji", it[0]);
+        b.type = "button";
+        b.dataset.emoji = it[0];
+        b.dataset.keywords = it[1];
+        b.title = it[1].split(" ")[0];
+        b.setAttribute("aria-label", "Icône " + it[1].split(" ")[0]);
+        emojiPick.appendChild(b);
+      });
     });
+
     emojiPick.addEventListener("click", function (e) {
       var b = e.target.closest("[data-emoji]");
       if (!b) return;
       draftEmoji = b.dataset.emoji || null;
       syncPickers();
     });
+    emojiSearch.addEventListener("input", filterEmojis);
 
-    COLORS.forEach(function (c) {
-      var b = el("button", "swatch");
-      b.type = "button";
-      b.dataset.color = c.key;
-      b.title = c.label;
-      b.setAttribute("aria-label", "Couleur " + c.label);
-      b.style.setProperty("--sw", "var(--tag-" + c.key + ")");
-      b.appendChild(el("i"));
-      colorPick.appendChild(b);
+    // Nuanciers (couleur de base + seconde teinte).
+    [colorPick, colorPick2].forEach(function (host, i) {
+      COLORS.forEach(function (c) {
+        var b = el("button", "swatch");
+        b.type = "button";
+        b.dataset.color = c.key;
+        b.title = c.label;
+        b.setAttribute("aria-label", (i ? "Dégradé vers " : "Couleur ") + c.label);
+        b.style.setProperty("--sw", "var(--tag-" + c.key + ")");
+        b.appendChild(el("i"));
+        host.appendChild(b);
+      });
+      host.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-color]");
+        if (!b) return;
+        if (i) draftColor2 = b.dataset.color;
+        else draftColor = b.dataset.color;
+        syncPickers();
+      });
     });
-    colorPick.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-color]");
-      if (!b) return;
-      draftColor = b.dataset.color;
+
+    gradToggle.addEventListener("change", function () {
+      if (gradToggle.checked) {
+        // Propose une seconde teinte différente par défaut.
+        if (!draftColor2 || draftColor2 === draftColor) {
+          draftColor2 = draftColor === "rose" ? "indigo" : "rose";
+        }
+      } else {
+        draftColor2 = null;
+      }
       syncPickers();
     });
   }
+
+  function filterEmojis() {
+    var q = emojiSearch.value.trim().toLowerCase();
+    var shown = 0;
+    Array.prototype.forEach.call(emojiPick.children, function (n) {
+      if (n.dataset.group) { n.hidden = !!q; return; }          // titres masqués en recherche
+      if (n.classList.contains("emoji-none")) { n.hidden = !!q; return; }
+      var hit = !q || (n.dataset.keywords || "").indexOf(q) !== -1;
+      n.hidden = !hit;
+      if (hit) shown++;
+    });
+    emojiEmpty.hidden = !q || shown > 0;
+  }
+
   function syncPickers() {
     Array.prototype.forEach.call(emojiPick.children, function (b) {
+      if (b.dataset.group) return;
       b.setAttribute("aria-pressed", (b.dataset.emoji || null) === draftEmoji ? "true" : "false");
     });
     Array.prototype.forEach.call(colorPick.children, function (b) {
       b.setAttribute("aria-pressed", b.dataset.color === draftColor ? "true" : "false");
     });
+    Array.prototype.forEach.call(colorPick2.children, function (b) {
+      b.setAttribute("aria-pressed", b.dataset.color === draftColor2 ? "true" : "false");
+    });
+    gradToggle.checked = !!draftColor2;
+    gradZone.hidden = !draftColor2;
+    gradPreview.style.setProperty("--g1", "var(--tag-" + draftColor + ")");
+    gradPreview.style.setProperty("--g2", "var(--tag-" + (draftColor2 || draftColor) + ")");
   }
 
   // --------------------------------------------------------------------------
@@ -635,7 +774,9 @@
       timeInput.value = ev.time || "";
       recurInput.checked = !!ev.recurring;
       draftEmoji = ev.emoji || null;
-      draftColor = ev.color || "ink";
+      var col = parseColor(ev.color);
+      draftColor = col.a;
+      draftColor2 = col.b;
       deleteBtn.hidden = false;
     } else {
       modalTitle.textContent = "Nouvel événement";
@@ -644,9 +785,13 @@
       recurInput.checked = false;
       draftEmoji = null;
       draftColor = "ink";
+      draftColor2 = null;
       deleteBtn.hidden = true;
     }
+    emojiSearch.value = "";
+    filterEmojis();
     syncPickers();
+    emojiPick.scrollTop = 0;
     modal.hidden = false;
     setTimeout(function () { nameInput.focus(); }, 40);
   }
@@ -676,12 +821,15 @@
       if (idx !== -1) {
         var ev = events[idx];
         ev.name = name; ev.date = normDate; ev.time = normTime;
-        ev.emoji = draftEmoji; ev.color = draftColor; ev.recurring = recurInput.checked;
+        ev.emoji = draftEmoji;
+        ev.color = serializeColor(draftColor, draftColor2);
+        ev.recurring = recurInput.checked;
       }
     } else {
       events.push({
         id: uid(), name: name, date: normDate, time: normTime,
-        emoji: draftEmoji, color: draftColor, recurring: recurInput.checked,
+        emoji: draftEmoji, color: serializeColor(draftColor, draftColor2),
+        recurring: recurInput.checked,
         created: new Date().toISOString()
       });
     }

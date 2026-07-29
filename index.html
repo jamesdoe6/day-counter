@@ -118,10 +118,25 @@
         </div>
 
         <label id="emoji-label">Icône</label>
-        <div id="emoji-picker" class="picker" role="group" aria-labelledby="emoji-label"></div>
+        <div class="picker-wrap">
+          <input type="search" id="emoji-search" class="picker-search" placeholder="Chercher une icône (tabac, jeux, cheveux…)" autocomplete="off" aria-label="Chercher une icône" />
+          <div id="emoji-picker" class="picker" role="group" aria-labelledby="emoji-label"></div>
+          <p id="emoji-empty" class="picker-empty" hidden>Aucune icône pour cette recherche.</p>
+        </div>
 
         <label id="color-label">Couleur</label>
         <div id="color-picker" class="swatches" role="group" aria-labelledby="color-label"></div>
+
+        <label class="check check-inline">
+          <input type="checkbox" id="gradient-toggle" />
+          <span><strong>Dégradé</strong><em>Fondre cette couleur vers une seconde teinte.</em></span>
+        </label>
+
+        <div id="gradient-zone" hidden>
+          <label id="color2-label">Vers</label>
+          <div id="color-picker-2" class="swatches" role="group" aria-labelledby="color2-label"></div>
+          <div id="gradient-preview" class="gradient-preview" aria-hidden="true"></div>
+        </div>
 
         <label class="check">
           <input type="checkbox" id="event-recurring" />
