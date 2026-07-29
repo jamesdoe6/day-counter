@@ -15,17 +15,28 @@ par exemple «&nbsp;il y a 4 ans, 5 mois et 6 jours&nbsp;».
   - Nom (texte libre).
   - Date au format **JJ/MM/AAAA** (les «&nbsp;/&nbsp;» s'insèrent tout seuls).
   - Heure au format **24h**, **optionnelle**.
-- **Deux formats d'affichage** : une bascule en haut de page permet de passer
-  du mode **Détaillé** (« il y a 4 ans, 5 mois et 6 jours ») au mode **Jours**
-  (« il y a 1617 jours »). Le choix est mémorisé.
-- **Modifier / Supprimer** : chaque carte a un bouton ✏️ qui ouvre la fiche
-  pour modifier le nom, la date et l'heure, ou supprimer l'événement.
-- **Gestes de glissement** : faites **glisser une carte vers la gauche** pour
-  révéler un bouton rouge **Supprimer**, ou **vers la droite** pour un bouton
-  bleu **Modifier**. Rapide et simple, comme sur une application native.
+- **Deux formats d'affichage** (menu ⋯) : **Détaillé** (« il y a 4 ans, 5 mois
+  et 6 jours ») ou **Jours** (« il y a 1 618 jours »). Le choix est mémorisé.
+- **Jalons** : chaque événement annonce son prochain cap remarquable
+  (« 2 000 jours dans 89 jours ») et le met en avant en laiton le jour venu.
+- **Icône et couleur** : un emoji et une couleur au choix par événement, pour
+  repérer une ligne d'un coup d'œil.
+- **Événements annuels** : cochez « chaque année » pour un anniversaire ou une
+  date fixe — l'app affiche alors le **compte à rebours jusqu'à la prochaine
+  occurrence**, le rang (« 33 ans le 14/03/2027 ») et une barre de progression
+  du cycle annuel.
+- **Recherche** : filtrez la liste par nom (loupe dans l'en-tête).
+- **Export / Import** : téléchargez une sauvegarde `.json` de tous vos
+  événements, ou restaurez-la (menu ⋯).
+- **Rappels** : notification à l'ouverture de l'app quand un jalon ou un
+  anniversaire tombe le jour même (voir la limite plus bas).
+- **Gestes de glissement** : **vers la gauche** pour révéler **Supprimer**,
+  **vers la droite** pour **Modifier**.
 - **Réorganisation** : par **glisser-déposer** de la poignée ⠿ à la souris, ou
   avec les **flèches ▲ / ▼** (pratiques sur mobile). Nombre d'événements
   illimité.
+- **Thème** clair / sombre / automatique, et **mode hors ligne** (l'app est
+  mise en cache par un service worker et démarre sans réseau).
 - **Sauvegarde en ligne synchronisée** : les événements sont enregistrés dans
   une base **Supabase** et retrouvés automatiquement sur **tous vos appareils**
   (le `localStorage` ne sert plus que de cache/secours hors ligne). Voir
@@ -101,6 +112,26 @@ ouverture, quel que soit l'appareil.
 Tant que `config.js` n'est pas rempli, l'app reste en **mode local**
 (localStorage), sans rien casser.
 
+### Migration du schéma
+
+Les colonnes `emoji`, `color` et `recurring` ont été ajoutées après la
+première version. Si votre base date d'avant, **relancez simplement
+[`supabase/schema.sql`](./supabase/schema.sql) en entier** (il est écrit pour
+être ré-exécutable sans risque).
+
+En attendant, rien ne casse : l'app détecte l'ancien schéma et continue de
+synchroniser les champs de base — seules l'icône, la couleur et la récurrence
+restent alors locales.
+
+### Limite des rappels
+
+Un vrai rappel programmé en arrière-plan exigerait un serveur de push et un
+abonnement Web Push : ce n'est pas possible pour un site purement statique.
+Day-Counter envoie donc une notification **à l'ouverture de l'application**
+si un jalon ou un anniversaire tombe ce jour-là (une seule fois par jour).
+Sur iPhone, les notifications web supposent iOS 16.4+ et un site ajouté à
+l'écran d'accueil.
+
 ### Comment ça marche
 
 - Ajout / modification / suppression / réorganisation → l'état complet est
@@ -115,13 +146,24 @@ Tant que `config.js` n'est pas rempli, l'app reste en **mode local**
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Structure de la page et de la modale d'ajout/modification |
-| `styles.css` | Thème violet ludique, cartes, modale, responsive |
-| `app.js` | Logique d'interface : calcul du temps écoulé, gestes, réorganisation |
+| `index.html` | Structure de la page, de la fiche et du menu |
+| `styles.css` | Identité visuelle : jetons de couleur, thèmes clair/sombre, registre |
+| `app.js` | Interface : calcul du temps, jalons, récurrence, gestes, recherche, export |
 | `store.js` | Persistance : cache local + synchronisation Supabase (hors ligne géré) |
 | `config.js` | Clés Supabase (URL + clé anon) — à renseigner |
-| `supabase/schema.sql` | Script à exécuter une fois dans Supabase (table + RLS) |
-| `favicon.svg` | Icône (sablier / horloge) |
+| `supabase/schema.sql` | Script à exécuter dans Supabase (table + colonnes + RLS) |
+| `sw.js` | Service worker : mise en cache pour le mode hors ligne |
+| `manifest.webmanifest` | Métadonnées d'application installable |
+| `favicon.svg`, `icon-*.png` | Icônes (cadran de chronomètre) |
+
+## Parti pris graphique
+
+Un **registre imprimé** plutôt qu'une pile de cartes : papier, filets fins,
+hiérarchie typographique forte et chiffres tabulaires. La palette vient du
+sujet — le **bleu acier bleui** des aiguilles de chronomètre sert d'accent, le
+**laiton** est réservé aux jalons. Les typographies sont celles du système
+(serif pour les compteurs, monospace pour les dates) : aucune requête réseau,
+donc un rendu identique hors ligne.
 
 ## Confidentialité
 

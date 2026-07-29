@@ -23,6 +23,19 @@ create table if not exists public.events (
   created_at  timestamptz not null default now()
 );
 
+-- -------------------------------------------------------------
+-- Colonnes ajoutées après la première version (icône, couleur, récurrence).
+-- Ces trois lignes sont sûres à ré-exécuter : si tu avais déjà créé la table
+-- avant ces fonctionnalités, relance simplement ce fichier entier.
+--
+-- Tant que ces colonnes n'existent pas, l'app fonctionne quand même : elle
+-- détecte l'ancien schéma et se contente des champs de base (mais l'icône,
+-- la couleur et la récurrence ne seront pas sauvegardées en ligne).
+-- -------------------------------------------------------------
+alter table public.events add column if not exists emoji     text;
+alter table public.events add column if not exists color     text;
+alter table public.events add column if not exists recurring boolean not null default false;
+
 -- Tri rapide par espace + position
 create index if not exists events_space_position_idx
   on public.events (space, position);

@@ -1,0 +1,17 @@
+{
+  "name": "Day-Counter",
+  "short_name": "Day-Counter",
+  "description": "Le temps écoulé depuis vos événements, compté à la seconde.",
+  "lang": "fr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f6f3",
+  "theme_color": "#f7f6f3",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

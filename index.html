@@ -3,89 +3,158 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="Day-Counter — suivez le temps écoulé depuis vos événements personnalisés." />
-  <meta name="theme-color" content="#6c5ce7" />
-  <!-- Application web plein écran (ajout à l'écran d'accueil iPhone) -->
+  <meta name="description" content="Day-Counter — le temps écoulé depuis vos événements, compté à la seconde." />
+  <meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#141519" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Day-Counter" />
   <title>Day-Counter</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <span class="brand-logo" aria-hidden="true">⏳</span>
-      <h1>Day-Counter</h1>
+
+  <header class="masthead">
+    <div class="masthead-bar">
+      <h1 class="wordmark">Day<span class="wordmark-rule"></span>Counter</h1>
+
+      <div class="masthead-tools">
+        <button id="search-btn" class="tool" type="button" aria-label="Rechercher" title="Rechercher">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </button>
+        <button id="menu-btn" class="tool" type="button" aria-label="Menu" title="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.7" class="fill"/><circle cx="12" cy="12" r="1.7" class="fill"/><circle cx="19" cy="12" r="1.7" class="fill"/></svg>
+        </button>
+        <button id="add-btn" class="btn btn-primary" type="button">
+          <span aria-hidden="true">＋</span><span class="btn-label">Ajouter</span>
+        </button>
+      </div>
     </div>
-    <div class="header-right">
-      <span id="sync-badge" class="sync-badge" data-state="local" role="status" aria-live="polite">
-        <span class="sync-dot" aria-hidden="true"></span>
-        <span class="sync-text">Local</span>
-      </span>
-      <button id="add-btn" class="btn btn-primary" type="button">
-        <span aria-hidden="true">＋</span> Ajouter
+
+    <div id="search-bar" class="search-bar" hidden>
+      <input type="search" id="search-input" placeholder="Rechercher un événement…" autocomplete="off" aria-label="Rechercher un événement" />
+      <button id="search-clear" class="search-clear" type="button" aria-label="Effacer la recherche">✕</button>
+    </div>
+
+    <div id="menu-panel" class="menu-panel" hidden>
+      <button type="button" class="menu-item" data-menu="view">
+        <span class="menu-ico" aria-hidden="true">◷</span>
+        <span class="menu-text">Format&nbsp;: <strong id="menu-view-value">Détaillé</strong></span>
       </button>
+      <button type="button" class="menu-item" data-menu="theme">
+        <span class="menu-ico" aria-hidden="true">◐</span>
+        <span class="menu-text">Thème&nbsp;: <strong id="menu-theme-value">Auto</strong></span>
+      </button>
+      <button type="button" class="menu-item" data-menu="notify">
+        <span class="menu-ico" aria-hidden="true">✷</span>
+        <span class="menu-text">Rappels&nbsp;: <strong id="menu-notify-value">Désactivés</strong></span>
+      </button>
+      <div class="menu-sep" role="separator"></div>
+      <button type="button" class="menu-item" data-menu="export">
+        <span class="menu-ico" aria-hidden="true">↓</span>
+        <span class="menu-text">Exporter une sauvegarde</span>
+      </button>
+      <button type="button" class="menu-item" data-menu="import">
+        <span class="menu-ico" aria-hidden="true">↑</span>
+        <span class="menu-text">Importer une sauvegarde</span>
+      </button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden />
     </div>
   </header>
 
-  <main class="container">
-    <p class="tagline">Combien de temps depuis&nbsp;? Ajoutez vos moments, on compte pour vous.</p>
+  <main class="sheet">
+    <ul id="event-list" class="ledger" aria-live="polite"></ul>
 
-    <!-- Bascule d'affichage : détaillé vs jours uniquement -->
-    <div id="view-toggle" class="view-toggle" role="group" aria-label="Format d'affichage" hidden>
-      <button type="button" data-view="full" class="active" aria-pressed="true">Détaillé</button>
-      <button type="button" data-view="days" aria-pressed="false">Jours</button>
-    </div>
+    <p id="no-results" class="no-results" hidden>Aucun événement ne correspond à cette recherche.</p>
 
-    <ul id="event-list" class="event-list" aria-live="polite"></ul>
-
-    <div id="empty-state" class="empty-state" hidden>
-      <div class="empty-emoji" aria-hidden="true">🗓️</div>
-      <h2>Aucun événement pour l'instant</h2>
-      <p>Cliquez sur «&nbsp;Ajouter&nbsp;» pour créer votre premier compteur.</p>
-      <button class="btn btn-primary" type="button" data-action="add-empty">
+    <div id="empty-state" class="empty" hidden>
+      <div class="empty-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="23"/><path d="M32 32V17"/><path d="M32 32l11 6"/></svg>
+      </div>
+      <h2>Rien à compter pour l'instant</h2>
+      <p>Ajoutez une date qui compte&nbsp;: le temps écoulé s'affichera ici, à la seconde près.</p>
+      <button class="btn btn-primary" type="button" data-action="add">
         <span aria-hidden="true">＋</span> Ajouter un événement
       </button>
     </div>
   </main>
 
-  <!-- Modale d'ajout / modification -->
+  <footer class="colophon">
+    <span id="sync-badge" class="sync" data-state="local" role="status" aria-live="polite">
+      <span class="sync-dot" aria-hidden="true"></span><span class="sync-text">Local</span>
+    </span>
+  </footer>
+
+  <!-- Fiche d'ajout / modification -->
   <div id="modal" class="modal" hidden>
-    <div class="modal-backdrop" data-action="close"></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button type="button" class="modal-close" data-action="close" aria-label="Fermer">✕</button>
-      <h2 id="modal-title">Nouvel événement</h2>
+    <div class="modal-scrim" data-action="close"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h2 id="modal-title">Nouvel événement</h2>
+        <button type="button" class="tool" data-action="close" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
       <form id="event-form" novalidate>
         <input type="hidden" id="event-id" />
 
-        <label for="event-name">Nom de l'événement</label>
-        <input type="text" id="event-name" placeholder="Ex : FAP" maxlength="120" autocomplete="off" required />
+        <label for="event-name">Nom</label>
+        <input type="text" id="event-name" placeholder="Ex : Permis de conduire" maxlength="120" autocomplete="off" />
 
-        <label for="event-date">Date <span class="hint">(JJ/MM/AAAA)</span></label>
-        <input type="text" id="event-date" placeholder="22/02/2022" inputmode="numeric" autocomplete="off" required />
+        <div class="field-row">
+          <div>
+            <label for="event-date">Date <span class="hint">JJ/MM/AAAA</span></label>
+            <input type="text" id="event-date" class="mono" placeholder="22/02/2022" inputmode="numeric" autocomplete="off" />
+          </div>
+          <div>
+            <label for="event-time">Heure <span class="hint">optionnel</span></label>
+            <input type="text" id="event-time" class="mono" placeholder="14:30" inputmode="numeric" autocomplete="off" />
+          </div>
+        </div>
 
-        <label for="event-time">Heure <span class="hint">(24h, optionnel)</span></label>
-        <input type="text" id="event-time" placeholder="14:30" inputmode="numeric" autocomplete="off" />
+        <label id="emoji-label">Icône</label>
+        <div id="emoji-picker" class="picker" role="group" aria-labelledby="emoji-label"></div>
+
+        <label id="color-label">Couleur</label>
+        <div id="color-picker" class="swatches" role="group" aria-labelledby="color-label"></div>
+
+        <label class="check">
+          <input type="checkbox" id="event-recurring" />
+          <span>
+            <strong>Chaque année</strong>
+            <em>Anniversaire, date fixe… affiche le compte à rebours jusqu'à la prochaine occurrence.</em>
+          </span>
+        </label>
 
         <p id="form-error" class="form-error" role="alert" hidden></p>
 
         <div class="modal-actions">
-          <button type="button" class="btn btn-danger" id="delete-btn" hidden>Supprimer</button>
-          <div class="modal-actions-right">
-            <button type="button" class="btn btn-ghost" data-action="close">Annuler</button>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-          </div>
+          <button type="button" class="btn btn-quiet btn-danger" id="delete-btn" hidden>Supprimer</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
         </div>
       </form>
     </div>
   </div>
 
-  <footer class="app-footer">
-    <p>Vos événements sont sauvegardés en ligne et synchronisés sur tous vos appareils.</p>
-  </footer>
+  <!-- Confirmation -->
+  <div id="confirm" class="modal" hidden>
+    <div class="modal-scrim" data-confirm="no"></div>
+    <div class="modal-sheet modal-sheet-narrow" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+      <h2 id="confirm-title">Confirmer</h2>
+      <p id="confirm-text" class="confirm-text"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-quiet" data-confirm="no">Annuler</button>
+        <button type="button" class="btn btn-primary" data-confirm="yes" id="confirm-ok">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="config.js"></script>
   <script src="store.js"></script>
