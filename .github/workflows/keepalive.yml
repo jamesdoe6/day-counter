@@ -1,0 +1,70 @@
+name: Garder Supabase actif
+
+# Supabase met un projet du plan gratuit en pause après ~7 jours SANS AUCUNE
+# requête. Ce workflow envoie une requête anodine tous les 3 jours, ce qui
+# suffit à garder le projet éveillé sans que personne n'ouvre le site.
+#
+# Les identifiants sont lus directement dans config.js : une seule source de
+# vérité, rien à dupliquer ici. La clé « anon » est publique par conception
+# (la sécurité vient des règles RLS), elle est quand même masquée dans les
+# journaux par précaution.
+
+on:
+  schedule:
+    # Tous les 3 jours à 07:23 UTC. Minute volontairement décalée : les crons
+    # à l'heure pile sont les plus souvent retardés chez GitHub.
+    - cron: '23 7 */3 * *'
+  workflow_dispatch:        # permet de lancer un test manuel à tout moment
+
+permissions:
+  contents: write           # pour le commit d'entretien (voir plus bas)
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lire les identifiants depuis config.js
+        id: cfg
+        run: |
+          URL=$(grep -oP 'SUPABASE_URL:\s*"\K[^"]+' config.js)
+          KEY=$(grep -oP 'SUPABASE_ANON_KEY:\s*"\K[^"]+' config.js)
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Impossible de lire SUPABASE_URL / SUPABASE_ANON_KEY dans config.js"
+            exit 1
+          fi
+          echo "::add-mask::$KEY"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Requête vers Supabase
+        run: |
+          CODE=$(curl -sS -o /tmp/out.txt -w '%{http_code}' \
+            "${{ steps.cfg.outputs.url }}/rest/v1/events?select=id&limit=1" \
+            -H "apikey: ${{ steps.cfg.outputs.key }}" \
+            -H "Authorization: Bearer ${{ steps.cfg.outputs.key }}")
+          echo "HTTP $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Supabase a répondu $CODE — le projet est probablement en pause. Réactive-le sur supabase.com (Restore), puis relance ce workflow."
+            head -c 500 /tmp/out.txt
+            exit 1
+          fi
+          echo "Projet actif ✔"
+
+      # GitHub désactive automatiquement un workflow planifié après 60 jours
+      # SANS activité sur le dépôt. Ce commit d'entretien garantit que le cron
+      # ci-dessus ne s'éteindra jamais tout seul.
+      - name: Entretenir l'activité du dépôt
+        run: |
+          mkdir -p .github
+          date -u +"Dernier ping Supabase : %Y-%m-%d %H:%M UTC" > .github/last-keepalive.txt
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last-keepalive.txt
+          git diff --quiet --cached || git commit -m "chore: ping Supabase $(date -u +%F)"
+          git push
