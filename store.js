@@ -197,6 +197,19 @@ window.Store = (function () {
     setStatus("syncing");
     var pre = isDirty() ? remotePush().then(function () { setDirty(false); }) : Promise.resolve();
     return pre.then(remotePull).then(function (remote) {
+      // Garde-fou anti-effacement : un serveur qui ne renvoie plus rien alors
+      // que le cache local contient des événements traduit presque toujours
+      // une base réinitialisée (projet recréé, table supprimée, schéma vidé)
+      // et non une suppression volontaire — supprimer depuis l'app pousse la
+      // suppression tout de suite. Dans ce cas on renvoie le cache vers le
+      // serveur au lieu de l'effacer.
+      if (!remote.length && events.length) {
+        knownIds = {};
+        return remotePush().then(function () {
+          setDirty(false);
+          setStatus("synced");
+        });
+      }
       replaceEvents(remote);
       knownIds = {};
       remote.forEach(function (ev) { knownIds[ev.id] = true; });
