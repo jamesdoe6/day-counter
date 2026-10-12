@@ -1,23 +1,28 @@
 name: Garder Supabase actif
 
-# Supabase met un projet du plan gratuit en pause après ~7 jours SANS AUCUNE
-# requête. Ce workflow envoie une requête anodine tous les 3 jours, ce qui
-# suffit à garder le projet éveillé sans que personne n'ouvre le site.
+# Supabase met un projet du plan gratuit en pause quand il ne reçoit pas assez
+# d'activité sur 7 jours glissants. La documentation est explicite :
+#   « Typically a few user requests to the database each day over the previous
+#     week is enough to keep the project from being paused. »
+#   https://supabase.com/docs/guides/platform/free-project-pausing
 #
-# Les identifiants sont lus directement dans config.js : une seule source de
-# vérité, rien à dupliquer ici. La clé « anon » est publique par conception
-# (la sécurité vient des règles RLS), elle est quand même masquée dans les
-# journaux par précaution.
+# Il faut donc QUELQUES REQUÊTES PAR JOUR, pas une de temps en temps : ce
+# workflow tourne toutes les 6 h et envoie 3 requêtes à chaque passage
+# (≈ 12 par jour), avec de la marge si GitHub retarde ou saute une exécution.
+#
+# Les identifiants sont lus dans config.js : une seule source de vérité. La
+# clé « anon » est publique par conception (la sécurité vient des règles RLS),
+# elle est quand même masquée dans les journaux.
 
 on:
   schedule:
-    # Tous les 3 jours à 07:23 UTC. Minute volontairement décalée : les crons
-    # à l'heure pile sont les plus souvent retardés chez GitHub.
-    - cron: '23 7 */3 * *'
-  workflow_dispatch:        # permet de lancer un test manuel à tout moment
+    # Toutes les 6 h. Minute décalée : les crons à l'heure pile sont les plus
+    # souvent retardés chez GitHub.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
 
 permissions:
-  contents: write           # pour le commit d'entretien (voir plus bas)
+  contents: write
 
 concurrency:
   group: keepalive
@@ -42,29 +47,44 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "key=$KEY" >> "$GITHUB_OUTPUT"
 
-      - name: Requête vers Supabase
+      - name: Requêtes vers la base
         run: |
-          CODE=$(curl -sS -o /tmp/out.txt -w '%{http_code}' \
-            "${{ steps.cfg.outputs.url }}/rest/v1/events?select=id&limit=1" \
-            -H "apikey: ${{ steps.cfg.outputs.key }}" \
-            -H "Authorization: Bearer ${{ steps.cfg.outputs.key }}")
-          echo "HTTP $CODE"
-          if [ "$CODE" != "200" ]; then
-            echo "::error::Supabase a répondu $CODE — le projet est probablement en pause. Réactive-le sur supabase.com (Restore), puis relance ce workflow."
-            head -c 500 /tmp/out.txt
+          URL="${{ steps.cfg.outputs.url }}"
+          KEY="${{ steps.cfg.outputs.key }}"
+          fail=0
+          for i in 1 2 3; do
+            CODE=$(curl -sS -o /tmp/out.txt -w '%{http_code}' \
+              "$URL/rest/v1/events?select=id&limit=1" \
+              -H "apikey: $KEY" -H "Authorization: Bearer $KEY" || echo "000")
+            echo "requête $i → HTTP $CODE"
+            [ "$CODE" = "200" ] || fail=1
+            sleep 2
+          done
+          if [ "$fail" = "1" ]; then
+            echo "::error::Supabase n'a pas répondu 200 — projet probablement en pause. Réactive-le (Resume project) puis relance ce workflow."
+            head -c 500 /tmp/out.txt || true
             exit 1
           fi
           echo "Projet actif ✔"
 
-      # GitHub désactive automatiquement un workflow planifié après 60 jours
-      # SANS activité sur le dépôt. Ce commit d'entretien garantit que le cron
-      # ci-dessus ne s'éteindra jamais tout seul.
-      - name: Entretenir l'activité du dépôt
+      # GitHub désactive un workflow planifié après 60 jours SANS activité sur
+      # le dépôt. On réécrit donc le témoin seulement s'il date de plus de
+      # 20 jours : le cron ne s'éteint jamais, sans polluer l'historique avec
+      # un commit toutes les 6 heures.
+      - name: Entretenir l'activité du dépôt (au plus une fois tous les 20 jours)
         run: |
+          STAMP=.github/last-keepalive.txt
+          LAST=$(git log -1 --format=%ct -- "$STAMP" 2>/dev/null || echo 0)
+          [ -n "$LAST" ] || LAST=0
+          AGE=$(( $(date +%s) - LAST ))
+          if [ "$AGE" -lt 1728000 ]; then
+            echo "Témoin vieux de $((AGE/86400)) j — pas de commit nécessaire."
+            exit 0
+          fi
           mkdir -p .github
-          date -u +"Dernier ping Supabase : %Y-%m-%d %H:%M UTC" > .github/last-keepalive.txt
+          date -u +"Dernier ping Supabase : %Y-%m-%d %H:%M UTC" > "$STAMP"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/last-keepalive.txt
-          git diff --quiet --cached || git commit -m "chore: ping Supabase $(date -u +%F)"
+          git add "$STAMP"
+          git diff --quiet --cached || git commit -m "chore: maintien de l'activité du dépôt $(date -u +%F)"
           git push
